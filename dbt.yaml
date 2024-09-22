@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dbt
+spec:
+  containers:
+  - name: dbt
+    image: nikitastarkov/dbt-surfalytics:latest
+    command: ["dbt", "run", "--profiles-dir", "./profiles"]
+  restartPolicy: Never
