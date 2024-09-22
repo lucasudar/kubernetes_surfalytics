@@ -289,6 +289,4 @@ kubectl apply -f dbt.yaml
 
 after adding dbt pod to your cluster it will execute automatically with command that we specified in `dbt.yaml` and status will change to `Completed` after job was done.
 
-![Screenshot 2024-09-14 at 4.43.58â¯PM.png](K8s%201010d81533b080758084f39701f0885b/Screenshot_2024-09-14_at_4.43.58_PM.png)
-
-[Extended version stripe+discord](K8s%201010d81533b080758084f39701f0885b/Extended%20version%20stripe+discord%201070d81533b080a6bbfcc502898b373c.md)
+![Screenshot 2024-09-14 at 4.43.58â¯PM.png](kubectl_get_pods.png)
