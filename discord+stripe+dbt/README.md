@@ -44,4 +44,4 @@ helm upgrade --install airflow apache-airflow/airflow -f override-values.yaml --
 kubectl port-forward svc/airflow-webserver 8081:8080 --namespace airflow
 ```
 
-you are usingÂ `dags.gitSync.sshKeySecret`, you should also [set](https://airflow.apache.org/docs/helm-chart/stable/production-guide.html#knownhosts)Â `dags.gitSync.knownHosts`
+you are usingÂ `dags.gitSync.sshKeySecret`, you should also [set](https://airflow.apache.org/docs/helm-chart/stable/production-guide.html#knownhosts) `dags.gitSync.knownHosts`
