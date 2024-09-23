@@ -14,6 +14,11 @@ engine = create_engine(DB_URI)
 token = os.getenv('DISCORD_BOT_TOKEN')
 guild_id = os.getenv('GUILD_ID')
 
+print(f"DISCORD_BOT_TOKEN: {token}")
+print(f"GUILD_ID: {guild_id}")
+print(f"DB_URI: {DB_URI}")
+print(f"DB_SCHEMA: {SCHEMA}")
+
 headers = {
     'Authorization': f'Bot {token}',
     'Content-Type': 'application/json'
