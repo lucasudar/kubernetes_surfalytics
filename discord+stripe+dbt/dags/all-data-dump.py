@@ -1,10 +1,13 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from datetime import datetime
+import sys
 import os
-from airflow.models import Variable
-from scripts.all-discord-dump import run_discord_dump
-from scripts.all-stripe-dump import run_stripe_dump
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'scripts')))
+
+from all_discord_dump import run_discord_dump
+from all_stripe_dump import run_stripe_dump
 
 # Define the path to the scripts
 DISCORD_SCRIPT = './scripts/all-discord-dump.py'
