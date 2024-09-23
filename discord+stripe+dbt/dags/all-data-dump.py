@@ -1,5 +1,14 @@
+import os
 import sys
-sys.path.append('../scripts')
+
+# Get the directory of the current file
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Construct the absolute path to the scripts directory
+scripts_dir = os.path.join(current_dir, '../scripts')
+
+# Add the scripts directory to the Python path
+sys.path.append(scripts_dir)
 
 from all_discord_dump import run_discord_dump
 from all_stripe_dump import run_stripe_dump
