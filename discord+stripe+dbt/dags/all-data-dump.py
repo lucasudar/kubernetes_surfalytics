@@ -10,8 +10,8 @@ from all_discord_dump import run_discord_dump
 from all_stripe_dump import run_stripe_dump
 
 # Define the path to the scripts
-DISCORD_SCRIPT = './scripts/all-discord-dump.py'
-STRIPE_SCRIPT = './scripts/all-stripe-dump.py'
+DISCORD_SCRIPT = './scripts/all_discord_dump.py'
+STRIPE_SCRIPT = './scripts/all_stripe_dump.py'
 
 # Default arguments for the DAG
 default_args = {
