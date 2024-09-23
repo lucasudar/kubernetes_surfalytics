@@ -1,4 +1,3 @@
-import os
 import stripe
 import pandas as pd
 from datetime import datetime
