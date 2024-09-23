@@ -4,20 +4,16 @@ import pandas as pd
 import aiohttp
 import asyncio
 from sqlalchemy import create_engine, text
+from airflow.models import Variable
 
 # PostgreSQL connection settings
-DB_URI = os.getenv('DB_URI')
-SCHEMA = os.getenv('DB_SCHEMA')
+DB_URI = Variable.get('DB_URI')
+SCHEMA = Variable.get('DB_SCHEMA')
 engine = create_engine(DB_URI)
 
 # Discord bot token и guild_id
-token = os.getenv('DISCORD_BOT_TOKEN')
-guild_id = os.getenv('GUILD_ID')
-
-print(f"DISCORD_BOT_TOKEN: {token}")
-print(f"GUILD_ID: {guild_id}")
-print(f"DB_URI: {DB_URI}")
-print(f"DB_SCHEMA: {SCHEMA}")
+token = Variable.get('DISCORD_BOT_TOKEN')
+guild_id = Variable.get('GUILD_ID')
 
 headers = {
     'Authorization': f'Bot {token}',
@@ -113,7 +109,10 @@ class DiscordClient(discord.Client):
         except Exception as e:
             print(f'Error saving data to {SCHEMA}.{table_name}: {e}')
 
-# Run the Discord client
+def run_discord_dump():
+    # Run the Discord client
+    asyncio.run(main())
+
 async def main():
     intents = discord.Intents.default()
     intents.messages = True
@@ -121,4 +120,4 @@ async def main():
     await client.start(token)
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    run_discord_dump()

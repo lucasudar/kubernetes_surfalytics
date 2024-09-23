@@ -3,15 +3,15 @@ import stripe
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
+from airflow.models import Variable
 
 # PostgreSQL connection settings
-DB_URI = os.getenv('DB_URI')
-SCHEMA = os.getenv('DB_SCHEMA')
+DB_URI = Variable.get('DB_URI')
+SCHEMA = Variable.get('DB_SCHEMA')
 engine = create_engine(DB_URI)
 
 # Stripe API key
-stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-
+stripe.api_key = Variable.get('STRIPE_API_KEY')
 
 def fetch_customers_with_subscriptions():
     customers = []
@@ -90,7 +90,7 @@ def save_to_postgres(df, table_name):
         else:
             print(f'No data to save to {SCHEMA}.{table_name}.')
 
-if __name__ == '__main__':
+def run_stripe_dump():
     # Fetch and save customers with subscriptions
     subscription_customers = fetch_customers_with_subscriptions()
     df_subscriptions = pd.DataFrame(subscription_customers)
@@ -105,3 +105,6 @@ if __name__ == '__main__':
     all_payments = fetch_all_payments_for_customers()
     df_payments = pd.DataFrame(all_payments)
     save_to_postgres(df_payments, 'stripe_all_payments')
+
+if __name__ == '__main__':
+    run_stripe_dump()
