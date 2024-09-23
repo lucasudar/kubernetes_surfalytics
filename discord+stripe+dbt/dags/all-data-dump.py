@@ -40,14 +40,12 @@ with DAG('all_data_dump', default_args=default_args, schedule_interval=None, cat
 
     discord_data_dump = PythonOperator(
         task_id='discord_data_dump',
-        python_callable=run_discord_script,
-        get_logs=True
+        python_callable=run_discord_script
     )
 
     stripe_data_dump = PythonOperator(
         task_id='stripe_data_dump',
-        python_callable=run_stripe_script,
-        get_logs=True
+        python_callable=run_stripe_script
     )
 
     # Set task dependencies
