@@ -18,7 +18,14 @@ def run_discord_script():
     
     # Import and run your script here
     import subprocess
-    subprocess.run(['python3', DISCORD_SCRIPT], check=True)
+    result = subprocess.run(
+        ['python3', DISCORD_SCRIPT], 
+        check=True, 
+        capture_output=True, 
+        text=True
+    )
+    print(result.stdout)  # Log standard output
+    print(result.stderr)  # Log errors
 
 def run_stripe_script():
     # Set environment variables (removed commas to avoid tuple creation)
