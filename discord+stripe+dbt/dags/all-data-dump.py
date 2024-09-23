@@ -10,9 +10,10 @@ STRIPE_SCRIPT = './scripts/all-stripe-dump.py'
 
 # Define your function to call the Python scripts
 def run_discord_script():
-    os.environ['DISCORD_BOT_TOKEN'] = Variable.get('DISCORD_BOT_TOKEN'),
-    os.environ['GUILD_ID'] = Variable.get('GUILD_ID'),
-    os.environ['DB_URI'] = Variable.get('DB_URI'),
+    # Set environment variables (removed commas to avoid tuple creation)
+    os.environ['DISCORD_BOT_TOKEN'] = Variable.get('DISCORD_BOT_TOKEN')
+    os.environ['GUILD_ID'] = Variable.get('GUILD_ID')
+    os.environ['DB_URI'] = Variable.get('DB_URI')
     os.environ['DB_SCHEMA'] = Variable.get('DB_SCHEMA')
     
     # Import and run your script here
@@ -20,8 +21,9 @@ def run_discord_script():
     subprocess.run(['python3', DISCORD_SCRIPT], check=True)
 
 def run_stripe_script():
-    os.environ['STRIPE_SECRET_KEY'] = Variable.get('STRIPE_SECRET_KEY'),
-    os.environ['DB_URI'] = Variable.get('DB_URI'),
+    # Set environment variables (removed commas to avoid tuple creation)
+    os.environ['STRIPE_SECRET_KEY'] = Variable.get('STRIPE_SECRET_KEY')
+    os.environ['DB_URI'] = Variable.get('DB_URI')
     os.environ['DB_SCHEMA'] = Variable.get('DB_SCHEMA')
     
     # Import and run your script here
@@ -32,7 +34,7 @@ def run_stripe_script():
 default_args = {
     'owner': 'airflow',
     'start_date': datetime(2024, 9, 22),
-    'retries': 1
+    'retries': 0
 }
 
 # Define the DAG
