@@ -1,11 +1,11 @@
 airflow:
   extraPipPackages:
-    - discord.py
-    - pandas
-    - aiohttp
-    - asyncio
-    - SQLAlchemy
-    - stripe
+    - "discord.py==2.4.0"
+    - "pandas==2.2.3"
+    - "aiohttp==3.10.5"
+    - "asyncio=3.4.3"
+    - "SQLAlchemy=2.0.35"
+    - "stripe=10.12.0"
 dags:
   gitSync:
     enabled: true
