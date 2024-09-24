@@ -1,16 +1,16 @@
+import os
 import stripe
 import pandas as pd
 from datetime import datetime
 from sqlalchemy import create_engine, text
-from airflow.models import Variable
 
 # PostgreSQL connection settings
-DB_URI = Variable.get('DB_URI')
-SCHEMA = Variable.get('DB_SCHEMA')
+DB_URI = os.getenv('DB_URI')
+SCHEMA = os.getenv('DB_SCHEMA')
 engine = create_engine(DB_URI)
 
 # Stripe API key
-stripe.api_key = Variable.get('STRIPE_API_KEY')
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 def fetch_customers_with_subscriptions():
     customers = []
@@ -64,8 +64,8 @@ def fetch_all_payments_for_customers():
 def save_to_postgres(df, table_name):
     with engine.connect() as conn:
         create_table_query = f'''
-        CREATE SCHEMA IF NOT EXISTS {SCHEMA};
-        CREATE TABLE IF NOT EXISTS {SCHEMA}.{table_name} (
+        CREATE SCHEMA IF NOT EXISTS raw_new;
+        CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
             customer_id TEXT,
             email TEXT,
             name TEXT,
@@ -80,14 +80,14 @@ def save_to_postgres(df, table_name):
         );
         '''
         conn.execute(text(create_table_query))
-        print(f'Table {SCHEMA}.{table_name} created or already exists.')
+        print(f'Table raw_new.{table_name} created or already exists.')
 
         # Save data to the table
         if not df.empty:
-            df.to_sql(table_name, con=engine, if_exists='append', index=False, schema=SCHEMA)
-            print(f'Data saved to table {SCHEMA}.{table_name}.')
+            df.to_sql(table_name, con=engine, if_exists='append', index=False, schema="raw_new")
+            print(f'Data saved to table raw_new.{table_name}.')
         else:
-            print(f'No data to save to {SCHEMA}.{table_name}.')
+            print(f'No data to save to raw_new.{table_name}.')
 
 def run_stripe_dump():
     # Fetch and save customers with subscriptions

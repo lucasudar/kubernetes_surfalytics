@@ -1,18 +1,18 @@
+import os
 import discord
 import pandas as pd
 import aiohttp
 import asyncio
 from sqlalchemy import create_engine, text
-from airflow.models import Variable
 
 # PostgreSQL connection settings
-DB_URI = Variable.get('DB_URI')
-SCHEMA = Variable.get('DB_SCHEMA')
+DB_URI = os.getenv('DB_URI')
+SCHEMA = os.getenv('DB_SCHEMA')
 engine = create_engine(DB_URI)
 
 # Discord bot token и guild_id
-token = Variable.get('DISCORD_BOT_TOKEN')
-guild_id = Variable.get('GUILD_ID')
+token = os.getenv('DISCORD_BOT_TOKEN')
+guild_id = os.getenv('GUILD_ID')
 
 headers = {
     'Authorization': f'Bot {token}',
@@ -84,8 +84,8 @@ class DiscordClient(discord.Client):
         try:
             with engine.connect() as conn:
                 create_table_query = f'''
-                CREATE SCHEMA IF NOT EXISTS {SCHEMA};
-                CREATE TABLE IF NOT EXISTS {SCHEMA}.{table_name} (
+                CREATE SCHEMA IF NOT EXISTS raw_new;
+                CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
                     user_id TEXT,
                     source_invite_code TEXT,
                     guild_name TEXT,
@@ -97,16 +97,16 @@ class DiscordClient(discord.Client):
                 );
                 '''
                 conn.execute(text(create_table_query))
-                print(f'Table {SCHEMA}.{table_name} created or already exists.')
+                print(f'Table raw_new.{table_name} created or already exists.')
                 
                 # Save data to the table
                 if not df.empty:
-                    df.to_sql(table_name, con=engine, if_exists='append', index=False, schema=SCHEMA)
-                    print(f'Data saved to table {SCHEMA}.{table_name}.')
+                    df.to_sql(table_name, con=engine, if_exists='append', index=False, schema="raw_new")
+                    print(f'Data saved to table raw_new.{table_name}.')
                 else:
-                    print(f'No data to save to {SCHEMA}.{table_name}.')
+                    print(f'No data to save to raw_new.{table_name}.')
         except Exception as e:
-            print(f'Error saving data to {SCHEMA}.{table_name}: {e}')
+            print(f'Error saving data to raw_new.{table_name}: {e}')
 
 def run_discord_dump():
     # Run the Discord client

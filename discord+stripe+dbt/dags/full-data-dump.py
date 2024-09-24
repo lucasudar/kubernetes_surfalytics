@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
-from datetime import datetime, timedelta
+from datetime import datetime
 from airflow.models import Variable
 
 default_args = {
@@ -10,20 +10,19 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 0,
-    'retry_delay': timedelta(minutes=5),
 }
 
-with DAG('api_extractor_last_48h',
+with DAG('full_data_dump',
          default_args=default_args,
-         schedule_interval='@daily',
+         schedule_interval=None,
          catchup=False) as dag:
 
     discord_task = KubernetesPodOperator(
-        task_id='run_discord_script',
-        name='discord-script',
+        task_id='full_discord_dump',
+        name='full_discord_dump',
         namespace='airflow',
         image='nikitastarkov/discord_stripe_dbt:latest',
-        cmds=["python", "./scripts/discord-script.py"],
+        cmds=["python", "./scripts/full_discord_dump.py"],
         env_vars={
             'DISCORD_BOT_TOKEN': Variable.get('DISCORD_BOT_TOKEN'),
             'GUILD_ID': Variable.get('GUILD_ID'),
@@ -34,11 +33,11 @@ with DAG('api_extractor_last_48h',
     )
 
     stripe_task = KubernetesPodOperator(
-        task_id='run_stripe_script',
-        name='stripe-script',
+        task_id='full_stripe_dump',
+        name='full_stripe_dump',
         namespace='airflow',
         image='nikitastarkov/discord_stripe_dbt:latest',
-        cmds=["python", "./scripts/stripe-script.py"],
+        cmds=["python", "./scripts/full_stripe_dump.py"],
         env_vars={
             'STRIPE_SECRET_KEY': Variable.get('STRIPE_SECRET_KEY'),
             'DB_URI': Variable.get('DB_URI')
