@@ -6,11 +6,11 @@ from sqlalchemy import create_engine, text
 
 # PostgreSQL connection settings
 DB_URI = os.getenv('DB_URI')
-SCHEMA = os.getenv('DB_SCHEMA')
 engine = create_engine(DB_URI)
 
 # Stripe API key
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
 
 def fetch_customers_with_subscriptions():
     customers = []
@@ -27,6 +27,7 @@ def fetch_customers_with_subscriptions():
                 'subscription_currency': subscription['items']['data'][0]['plan']['currency']
             })
     return customers
+
 
 def fetch_customers_with_one_time_purchases():
     customers = []
@@ -45,6 +46,7 @@ def fetch_customers_with_one_time_purchases():
             })
     return customers
 
+
 def fetch_all_payments_for_customers():
     payments = []
     for customer in stripe.Customer.list(limit=100).auto_paging_iter():
@@ -61,49 +63,80 @@ def fetch_all_payments_for_customers():
             })
     return payments
 
-def save_to_postgres(df, table_name):
+
+def save_to_postgres(df, table_name, schema):
     with engine.connect() as conn:
-        create_table_query = f'''
-        CREATE SCHEMA IF NOT EXISTS raw_new;
-        CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
-            customer_id TEXT,
-            email TEXT,
-            name TEXT,
-            subscription_status TEXT,
-            subscription_amount REAL,
-            subscription_currency TEXT,
-            amount REAL,
-            currency TEXT,
-            description TEXT,
-            payment_status TEXT,
-            transaction_timestamp TIMESTAMP
-        );
-        '''
+        # Разные схемы для таблиц в зависимости от типа данных
+        if schema == 'subscriptions':
+            create_table_query = f'''
+            CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
+                customer_id TEXT,
+                email TEXT,
+                name TEXT,
+                subscription_status TEXT,
+                subscription_amount REAL,
+                subscription_currency TEXT
+            );
+            '''
+        elif schema == 'one_time':
+            create_table_query = f'''
+            CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
+                customer_id TEXT,
+                email TEXT,
+                name TEXT,
+                amount REAL,
+                currency TEXT,
+                transaction_timestamp TIMESTAMP,
+                description TEXT,
+                payment_status TEXT
+            );
+            '''
+        elif schema == 'all_payments':
+            create_table_query = f'''
+            CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
+                customer_id TEXT,
+                email TEXT,
+                name TEXT,
+                amount REAL,
+                currency TEXT,
+                transaction_timestamp TIMESTAMP,
+                description TEXT,
+                payment_status TEXT
+            );
+            '''
+        else:
+            raise ValueError(f'Unknown schema: {schema}')
+
         conn.execute(text(create_table_query))
         print(f'Table raw_new.{table_name} created or already exists.')
 
-        # Save data to the table
+        # Сохранение данных в таблицу
         if not df.empty:
-            df.to_sql(table_name, con=engine, if_exists='append', index=False, schema="raw_new")
+            df.to_sql(table_name, con=engine, if_exists='append',
+                      index=False, schema="raw_new")
             print(f'Data saved to table raw_new.{table_name}.')
         else:
             print(f'No data to save to raw_new.{table_name}.')
+
 
 def run_stripe_dump():
     # Fetch and save customers with subscriptions
     subscription_customers = fetch_customers_with_subscriptions()
     df_subscriptions = pd.DataFrame(subscription_customers)
-    save_to_postgres(df_subscriptions, 'stripe_subscription_customers')
+    save_to_postgres(df_subscriptions,
+                     'stripe_subscription_customers', schema='subscriptions')
 
     # Fetch and save customers with one-time purchases
     one_time_customers = fetch_customers_with_one_time_purchases()
     df_one_time = pd.DataFrame(one_time_customers)
-    save_to_postgres(df_one_time, 'stripe_one_time_customers')
+    save_to_postgres(df_one_time, 'stripe_one_time_customers',
+                     schema='one_time')
 
     # Fetch and save all payments for customers
     all_payments = fetch_all_payments_for_customers()
     df_payments = pd.DataFrame(all_payments)
-    save_to_postgres(df_payments, 'stripe_all_payments')
+    save_to_postgres(df_payments, 'stripe_all_payments', schema='all_payments')
+
 
 if __name__ == '__main__':
     run_stripe_dump()

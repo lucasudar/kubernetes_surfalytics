@@ -21,12 +21,13 @@ with DAG('full_data_dump',
         task_id='full_discord_dump',
         name='full_discord_dump',
         namespace='airflow',
-        image='nikitastarkov/discord_stripe_dbt:latest',
+        image='nikitastarkov/discord_stripe_dbt:0.3',
         cmds=["python", "./scripts/full_discord_dump.py"],
         env_vars={
             'DISCORD_BOT_TOKEN': Variable.get('DISCORD_BOT_TOKEN'),
             'GUILD_ID': Variable.get('GUILD_ID'),
-            'DB_URI': Variable.get('DB_URI')
+            'DB_URI': Variable.get('DB_URI'),
+            'DB_SCHEMA': Variable.get('DB_SCHEMA')
         },
         is_delete_operator_pod=True,
         get_logs=True,
@@ -36,11 +37,12 @@ with DAG('full_data_dump',
         task_id='full_stripe_dump',
         name='full_stripe_dump',
         namespace='airflow',
-        image='nikitastarkov/discord_stripe_dbt:latest',
+        image='nikitastarkov/discord_stripe_dbt:0.3',
         cmds=["python", "./scripts/full_stripe_dump.py"],
         env_vars={
             'STRIPE_SECRET_KEY': Variable.get('STRIPE_SECRET_KEY'),
-            'DB_URI': Variable.get('DB_URI')
+            'DB_URI': Variable.get('DB_URI'),
+            'DB_SCHEMA': Variable.get('DB_SCHEMA')
         },
         is_delete_operator_pod=True,
         get_logs=True,

@@ -3,6 +3,7 @@ import discord
 import pandas as pd
 import aiohttp
 import asyncio
+from datetime import datetime, timedelta
 from sqlalchemy import create_engine, text
 
 # PostgreSQL connection settings
@@ -17,6 +18,9 @@ headers = {
     'Authorization': f'Bot {token}',
     'Content-Type': 'application/json'
 }
+
+# Set the date range for the last 2 days
+two_days_ago = datetime.now() - timedelta(days=2)
 
 
 class DiscordClient(discord.Client):
@@ -51,7 +55,7 @@ class DiscordClient(discord.Client):
 
         if all_invite_data:
             self.df_invite = pd.DataFrame(all_invite_data)
-            await self.save_to_postgres(self.df_invite, 'discord_user_invite_codes', schema='invite')
+            await self.save_to_postgres(self.df_invite, 'tmp_discord_user_invite_codes')
         else:
             print('No invite data to save.')
 
@@ -60,7 +64,7 @@ class DiscordClient(discord.Client):
         for guild in self.guilds:
             for channel in guild.text_channels:
                 try:
-                    async for message in channel.history(limit=None):
+                    async for message in channel.history(limit=None, after=two_days_ago):
                         if message.author.bot:
                             continue
                         all_user_data.append({
@@ -77,40 +81,21 @@ class DiscordClient(discord.Client):
 
         if all_user_data:
             df_activity = pd.DataFrame(all_user_data)
-            await self.save_to_postgres(df_activity, 'discord_user_activity', schema='activity')
+            await self.save_to_postgres(df_activity, 'tmp_discord_user_activity')
         else:
             print('No activity data to save.')
 
-    async def save_to_postgres(self, df, table_name, schema):
+    async def save_to_postgres(self, df, table_name):
         try:
             with engine.connect() as conn:
-                # Создание таблицы с разной схемой в зависимости от ее назначения
-                if schema == 'invite':
-                    create_table_query = f'''
-                    CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
-                        user_id TEXT,
-                        source_invite_code TEXT
-                    );
-                    '''
-                elif schema == 'activity':
-                    create_table_query = f'''
-                    CREATE TABLE IF NOT EXISTS raw_new.{table_name} (
-                        guild_name TEXT,
-                        channel_name TEXT,
-                        user_id TEXT,
-                        name TEXT,
-                        discriminator TEXT,
-                        message_count INTEGER,
-                        message_timestamp TIMESTAMP
-                    );
-                    '''
-                else:
-                    raise ValueError(f'Unknown schema: {schema}')
+                # Truncate the table before inserting new data
+                truncate_table_query = f'''
+                TRUNCATE TABLE raw_new.{table_name};
+                '''
+                conn.execute(text(truncate_table_query))
+                print(f'Table raw_new.{table_name} truncated.')
 
-                conn.execute(text(create_table_query))
-                print(f'Table raw_new.{table_name} created or already exists.')
-
-                # Сохранение данных в таблицу
+                # Save data to the table
                 if not df.empty:
                     df.to_sql(table_name, con=engine, if_exists='append',
                               index=False, schema="raw_new")
@@ -122,7 +107,7 @@ class DiscordClient(discord.Client):
 
 
 def run_discord_dump():
-    # Запуск клиента Discord
+    # Run the Discord client
     asyncio.run(main())
 
 
