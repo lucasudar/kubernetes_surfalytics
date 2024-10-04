@@ -15,25 +15,6 @@ stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 two_days_ago = datetime.now() - timedelta(days=2)
 
 
-def fetch_customers_with_subscriptions():
-    customers = []
-    for customer in stripe.Customer.list(limit=100).auto_paging_iter():
-        subscriptions = stripe.Subscription.list(customer=customer.id, limit=1)
-        if subscriptions['data']:
-            subscription = subscriptions['data'][0]
-            created = datetime.fromtimestamp(subscription['created'])
-            if created >= two_days_ago:
-                customers.append({
-                    'customer_id': customer.id,
-                    'email': customer.email,
-                    'name': customer.name,
-                    'subscription_status': subscription['status'],
-                    'subscription_amount': subscription['items']['data'][0]['plan']['amount'] / 100,
-                    'subscription_currency': subscription['items']['data'][0]['plan']['currency']
-                })
-    return customers
-
-
 def fetch_customers_with_one_time_purchases():
     customers = []
     for charge in stripe.Charge.list(limit=100).auto_paging_iter():
@@ -92,11 +73,6 @@ def save_to_postgres(df, table_name):
 
 
 def run_stripe_dump():
-    # Fetch and save customers with subscriptions
-    subscription_customers = fetch_customers_with_subscriptions()
-    df_subscriptions = pd.DataFrame(subscription_customers)
-    save_to_postgres(df_subscriptions, 'tmp_stripe_subscription_customers')
-
     # Fetch and save customers with one-time purchases
     one_time_customers = fetch_customers_with_one_time_purchases()
     df_one_time = pd.DataFrame(one_time_customers)
