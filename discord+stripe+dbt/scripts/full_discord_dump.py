@@ -101,7 +101,8 @@ class DiscordClient(discord.Client):
                         name TEXT,
                         discriminator TEXT,
                         message_count INTEGER,
-                        message_timestamp TIMESTAMP
+                        message_timestamp TIMESTAMP,
+                        etl_timestamp TIMESTAMP
                     );
                     '''
                 else:

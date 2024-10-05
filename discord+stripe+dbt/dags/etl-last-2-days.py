@@ -1,5 +1,6 @@
 from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.operators.dagrun_operator import TriggerDagRunOperator
 from airflow.models import Variable
 from datetime import datetime
 
@@ -19,7 +20,7 @@ with DAG(
         task_id='etl_task',
         name='etl_task',
         namespace='airflow',
-        image='nikitastarkov/discord_stripe_dbt:0.19',
+        image='nikitastarkov/discord_stripe_dbt:0.31',
         cmds=["python", "./scripts/etl_last_2_days.py"],
         env_vars={
             'DB_URI': Variable.get('DB_URI'),
@@ -28,4 +29,9 @@ with DAG(
         get_logs=True,
     )
 
-    etl_task
+    trigger_dbt_task = TriggerDagRunOperator(
+        task_id='trigger_dbt_task',
+        trigger_dag_id='dbt',
+    )
+
+    etl_task >> trigger_dbt_task

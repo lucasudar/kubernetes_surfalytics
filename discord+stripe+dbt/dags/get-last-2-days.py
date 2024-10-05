@@ -22,7 +22,7 @@ with DAG(
     discord_task = KubernetesPodOperator(
         task_id='discord_task',
         namespace='airflow',
-        image='nikitastarkov/discord_stripe_dbt:0.19',
+        image='nikitastarkov/discord_stripe_dbt:0.31',
         cmds=["python", "./scripts/get_last_2_days_discord.py"],
         env_vars={
             'DISCORD_BOT_TOKEN': Variable.get('DISCORD_BOT_TOKEN'),
@@ -37,7 +37,7 @@ with DAG(
     stripe_task = KubernetesPodOperator(
         task_id='stripe_task',
         namespace='airflow',
-        image='nikitastarkov/discord_stripe_dbt:0.19',
+        image='nikitastarkov/discord_stripe_dbt:0.31',
         cmds=["python", "./scripts/get_last_2_days_stripe.py"],
         env_vars={
             'STRIPE_SECRET_KEY': Variable.get('STRIPE_SECRET_KEY'),

@@ -88,7 +88,8 @@ def save_to_postgres(df, table_name, schema):
                 currency TEXT,
                 transaction_timestamp TIMESTAMP,
                 description TEXT,
-                payment_status TEXT
+                payment_status TEXT,
+                etl_timestamp TIMESTAMP
             );
             '''
         elif schema == 'all_payments':
@@ -101,7 +102,8 @@ def save_to_postgres(df, table_name, schema):
                 currency TEXT,
                 transaction_timestamp TIMESTAMP,
                 description TEXT,
-                payment_status TEXT
+                payment_status TEXT,
+                etl_timestamp TIMESTAMP
             );
             '''
         else:

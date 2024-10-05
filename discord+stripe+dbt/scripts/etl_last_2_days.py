@@ -13,10 +13,18 @@ current_timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 def update_full_table(tmp_table, full_table):
     with engine.connect() as conn:
+        column_name = None
+        if 'discord' in full_table:
+            column_name = 'message_timestamp'
+        elif 'stripe' in full_table:
+            column_name = 'transaction_timestamp'
+        else:
+            raise ValueError(f'Unknown table name: {full_table}')
+        
         # Step 1: Delete data from the full table for the last 2 days
         delete_query = f'''
         DELETE FROM raw_new.{full_table}
-        WHERE etl_timestamp >= :two_days_ago;
+        WHERE {column_name} >= :two_days_ago;
         '''
         conn.execute(text(delete_query), {'two_days_ago': two_days_ago})
         print(f"Deleted last 2 days of data from {full_table}")
